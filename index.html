@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAXI Чулым-Моторс</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0d0d0d;
+  --yellow: #f7c948;
+  --white: #fafafa;
+  --gray: #1e1e1e;
+  --gray2: #2c2c2c;
+  --gray3: #252525;
+  --muted: #888;
+  --radius: 14px;
+  --blue: #229ED9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* HERO */
+.hero {
+  width: 100%;
+  background: var(--yellow);
+  padding: 24px 24px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '🚕';
+  font-size: 110px;
+  position: absolute;
+  right: -14px; top: -8px;
+  opacity: .12;
+  transform: rotate(-15deg);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-block;
+  background: var(--black);
+  color: var(--yellow);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  letter-spacing: 3px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-bottom: 6px;
+}
+.hero h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 10vw, 58px);
+  color: var(--black);
+  line-height: 1;
+}
+.hero h1 span { opacity: .4; }
+.hero-sub { font-size: 12px; color: var(--black); opacity: .55; margin-top: 3px; font-weight: 600; letter-spacing: .5px; }
+
+/* TABS */
+.tabs-wrap {
+  width: 100%;
+  max-width: 440px;
+  padding: 0 16px;
+  margin-top: -18px;
+  position: relative;
+  z-index: 10;
+}
+.tabs {
+  display: flex;
+  background: var(--gray2);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: background .2s, color .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tab-btn.active {
+  background: var(--yellow);
+  color: var(--black);
+}
+
+/* CARD */
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--gray);
+  padding: 22px 18px 24px;
+  flex: 1;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.section-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+/* ROUTE INPUTS */
+.route-block { position: relative; margin-bottom: 4px; }
+
+.input-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+.input-dot {
+  position: absolute;
+  left: 13px; top: 50%;
+  transform: translateY(-50%);
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 2px solid var(--black);
+  z-index: 2;
+}
+.input-dot.mid { background: #fff; border-color: var(--gray2); }
+.input-dot.end { background: var(--black); border-color: var(--yellow); }
+.input-wrap input {
+  width: 100%;
+  background: var(--gray2);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  padding: 12px 12px 12px 34px;
+  color: var(--white);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color .2s;
+}
+.input-wrap input:focus { border-color: var(--yellow); }
+.input-wrap input::placeholder { color: #555; font-weight: 600; }
+
+/* Autocomplete */
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0; right: 0;
+  background: var(--gray3);
+  border: 1.5px solid var(--yellow);
+  border-radius: var(--radius);
+  z-index: 200;
+  max-height: 190px;
+  overflow-y: auto;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.autocomplete-list.open { display: block; }
+.autocomplete-list::-webkit-scrollbar { width: 4px; }
+.autocomplete-list::-webkit-scrollbar-thumb { background: var(--yellow); border-radius: 4px; }
+.autocomplete-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 1px solid #333;
+  transition: background .12s;
+}
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover, .autocomplete-item.active { background: var(--yellow); color: var(--black); }
+.autocomplete-item mark { background: none; color: inherit; font-weight: 800; text-decoration: underline; }
+
+/* OPTIONS row */
+.options-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.opt-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1.5px solid #3a3a3a;
+  background: var(--gray2);
+  color: var(--muted);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.opt-btn.active {
+  border-color: var(--yellow);
+  color: var(--yellow);
+  background: rgba(247,201,72,.08);
+}
+
+/* Stopover input hidden by default */
+.stopover-wrap { display: none; margin-bottom: 0; }
+.stopover-wrap.visible { display: block; }
+
+/* PRICE BOX */
+.price-box {
+  background: var(--yellow);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+  min-height: 68px;
+}
+.price-box.show { opacity: 1; pointer-events: auto; }
+.price-label { font-size: 11px; font-weight: 700; color: var(--black); letter-spacing: 1px; text-transform: uppercase; }
+.price-note { font-size: 11px; color: rgba(0,0,0,.45); font-weight: 700; margin-top: 2px; }
+.price-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  color: var(--black);
+  line-height: 1;
+}
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid #2e2e2e; margin: 0 0 16px; }
+
+/* BUTTONS */
+.contact-label {
+  font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 10px; font-weight: 700;
+}
+.btn-group { display: flex; flex-direction: column; gap: 9px; }
+.btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: var(--radius);
+  text-decoration: none; font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 15px;
+  transition: transform .15s, box-shadow .15s;
+  cursor: pointer; border: none; width: 100%;
+}
+.btn:active { transform: scale(.97); }
+.btn-tg { background: var(--blue); color: #fff; box-shadow: 0 4px 14px rgba(34,158,217,.2); }
+.btn-tg:hover { box-shadow: 0 6px 20px rgba(34,158,217,.4); }
+.btn-max { background: var(--gray2); color: var(--white); border: 1.5px solid #3a3a3a; }
+.btn-icon { font-size: 20px; flex-shrink: 0; }
+.btn-text { display: flex; flex-direction: column; text-align: left; }
+.btn-title { font-size: 15px; font-weight: 800; line-height: 1.2; }
+.btn-desc { font-size: 11px; opacity: .55; font-weight: 600; }
+.btn-arrow { margin-left: auto; opacity: .45; font-size: 18px; }
+
+/* FOOTER */
+.footer {
+  width: 100%; max-width: 440px;
+  padding: 16px 18px 28px;
+  text-align: center;
+}
+.footer-call {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--yellow); color: var(--black);
+  border-radius: var(--radius); padding: 14px 18px;
+  text-decoration: none; font-family: 'Nunito', sans-serif;
+  font-weight: 800; font-size: 16px; margin-bottom: 12px;
+  transition: transform .15s;
+}
+.footer-call:active { transform: scale(.97); }
+.footer-phone {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px; color: var(--yellow); letter-spacing: 1px;
+}
+.footer-note { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+.footer-copy { margin-top: 12px; font-size: 10px; color: #3a3a3a; font-weight: 600; }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.75); z-index: 300;
+  justify-content: center; align-items: flex-end; padding-bottom: 16px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--gray); border-radius: 20px;
+  padding: 24px 20px; width: calc(100% - 32px);
+  max-width: 440px; position: relative;
+  animation: slideUp .22s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--yellow); margin-bottom: 3px; }
+.modal-sub { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 14px; }
+.modal-text {
+  background: var(--gray2); border-radius: 10px;
+  padding: 13px; font-size: 14px; font-weight: 600;
+  color: var(--white); margin-bottom: 14px; line-height: 1.6;
+}
+.modal-actions { display: flex; gap: 9px; }
+.modal-btn {
+  flex: 1; padding: 12px; border-radius: var(--radius);
+  font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-size: 14px; border: none; cursor: pointer;
+  text-align: center; text-decoration: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-copy { background: var(--yellow); color: var(--black); }
+.modal-open { background: var(--gray2); color: var(--white); border: 1.5px solid #444; }
+.modal-x {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: none; color: var(--muted);
+  font-size: 22px; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">⚡ Круглосуточно · Чулым</div>
+  <h1>TAXI <span>Чулым</span>-Моторс</h1>
+  <p class="hero-sub">Комфорт. Надёжность. Точность.</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="taxi">🚕 Такси</button>
+    <button class="tab-btn" data-tab="delivery">📦 Доставка</button>
+  </div>
+</div>
+
+<!-- CARD -->
+<div class="card">
+
+  <!-- ===== ТАКСИ ===== -->
+  <div class="tab-panel active" id="panel-taxi">
+    <div class="section-label">📍 Маршрут</div>
+    <div class="route-block">
+      <div class="input-wrap">
+        <div class="input-dot"></div>
+        <input type="text" id="t-from" placeholder="Откуда" autocomplete="off">
+        <div class="autocomplete-list" id="t-from-list"></div>
+      </div>
+      <div class="stopover-wrap" id="t-stopover-wrap">
+        <div class="input-wrap">
+          <div class="input-dot mid"></div>
+          <input type="text" id="t-stop" placeholder="Заезд (доп. адрес)" autocomplete="off">
+          <div class="autocomplete-list" id="t-stop-list"></div>
+        </div>
+      </div>
+      <div class="input-wrap">
+        <div class="input-dot end"></div>
+        <input type="text" id="t-to" placeholder="Куда" autocomplete="off">
+        <div class="autocomplete-list" id="t-to-list"></div>
+      </div>
+    </div>
+    <div class="options-row">
+      <button class="opt-btn" id="t-opt-stop">➕ С заездом <small style="opacity:.6;font-size:11px">+50₽</small></button>
+      <button class="opt-btn" id="t-opt-return">🔄 Туда-обратно <small style="opacity:.6;font-size:11px">×2</small></button>
+    </div>
+    <div class="price-box" id="t-price-box">
+      <div>
+        <div class="price-label">Стоимость поездки</div>
+        <div class="price-note" id="t-price-note">по городу Чулым</div>
+      </div>
+      <div class="price-value" id="t-price-value">150 ₽</div>
+    </div>
+    <hr class="divider">
+    <div class="contact-label">📨 Способ связи</div>
+    <div class="btn-group">
+      <a id="t-btn-tg" href="#" class="btn btn-tg">
+        <span class="btn-icon">✈️</span>
+        <span class="btn-text"><span class="btn-title">Telegram</span><span class="btn-desc">Сообщение с маршрутом</span></span>
+        <span class="btn-arrow">›</span>
+      </a>
+      <button id="t-btn-max" class="btn btn-max">
+        <span class="btn-icon">💬</span>
+        <span class="btn-text"><span class="btn-title">MAX</span><span class="btn-desc">Сообщение с маршрутом</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== ДОСТАВКА ===== -->
+  <div class="tab-panel" id="panel-delivery">
+    <div class="section-label">📍 Маршрут доставки</div>
+    <div class="route-block">
+      <div class="input-wrap">
+        <div class="input-dot"></div>
+        <input type="text" id="d-from" placeholder="Откуда забрать" autocomplete="off">
+        <div class="autocomplete-list" id="d-from-list"></div>
+      </div>
+      <div class="stopover-wrap" id="d-stopover-wrap">
+        <div class="input-wrap">
+          <div class="input-dot mid"></div>
+          <input type="text" id="d-stop" placeholder="Доп. адрес" autocomplete="off">
+          <div class="autocomplete-list" id="d-stop-list"></div>
+        </div>
+      </div>
+      <div class="input-wrap">
+        <div class="input-dot end"></div>
+        <input type="text" id="d-to" placeholder="Куда доставить" autocomplete="off">
+        <div class="autocomplete-list" id="d-to-list"></div>
+      </div>
+    </div>
+    <div class="options-row">
+      <button class="opt-btn" id="d-opt-stop">➕ С заездом <small style="opacity:.6;font-size:11px">+50₽</small></button>
+      <button class="opt-btn" id="d-opt-return">🔄 Туда-обратно <small style="opacity:.6;font-size:11px">×2</small></button>
+    </div>
+    <div class="price-box" id="d-price-box">
+      <div>
+        <div class="price-label">Стоимость доставки</div>
+        <div class="price-note" id="d-price-note">по городу Чулым</div>
+      </div>
+      <div class="price-value" id="d-price-value">100 ₽</div>
+    </div>
+    <hr class="divider">
+    <div class="contact-label">📨 Способ связи</div>
+    <div class="btn-group">
+      <a id="d-btn-tg" href="#" class="btn btn-tg">
+        <span class="btn-icon">✈️</span>
+        <span class="btn-text"><span class="btn-title">Telegram</span><span class="btn-desc">Сообщение с маршрутом</span></span>
+        <span class="btn-arrow">›</span>
+      </a>
+      <button id="d-btn-max" class="btn btn-max">
+        <span class="btn-icon">💬</span>
+        <span class="btn-text"><span class="btn-title">MAX</span><span class="btn-desc">Сообщение с маршрутом</span></span>
+        <span class="btn-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <a href="tel:+79134734735" class="footer-call">
+    <span style="font-size:20px">📞</span> Позвонить диспетчеру
+  </a>
+  <div class="footer-phone">+7 (913) 473-47-35</div>
+  <div class="footer-note">Диспетчер на связи 24 / 7</div>
+  <div class="footer-copy">© 2025 Чулым-Моторс</div>
+</div>
+
+<!-- MAX MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-x" id="modal-x">✕</button>
+    <div class="modal-title">MAX · Шаблон</div>
+    <div class="modal-sub">Скопируйте и отправьте диспетчеру</div>
+    <div class="modal-text" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-copy" id="modal-copy">Скопировать ✓</button>
+      <a href="https://max.ru" target="_blank" class="modal-btn modal-open">Открыть MAX →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const STREETS = ["2-я Советская ул.","50 лет Победы ул.","60 лет Победы ул.","Александра Покрышкина ул.","Аптечная ул.","Банковский пер.","Белинского ул.","Береговая ул.","Больничный пер.","Бурлинская ул.","Вокзальный пер.","Володарского ул.","Восточная ул.","Гоголя ул.","Деповская ул.","Деповский пер.","Димитрова ул.","Димитрова пер.","Добролюбова ул.","Дорожная ул.","Дубравная ул.","Дуси Ковальчук ул.","Железнодорожная ул.","Заводская ул.","Заречная ул.","Иткульский пер.","Калинина ул.","Карла Маркса ул.","Кирова пер.","Кирова ул.","Кирпичная ул.","Кирпичный пер.","Кожемякина ул.","Коммунальный пер.","Коммунистическая ул.","Коммунистический пер.","Комсомольская ул.","Кооперативная ул.","Красноармейская ул.","Крупской пер.","Крупской ул.","Ленина ул.","Лермонтова ул.","Лесная ул.","Линейная ул.","Линейный пер.","Ломоносова ул.","Луговая ул.","Луговой пер.","Льва Толстого ул.","Максима Горького ул.","Матросова ул.","Маяковского ул.","Мелиораторов ул.","Мельничная ул.","Мельничный пер.","Механизаторов ул.","Мира ул.","Мичурина ул.","Молодежная ул.","Московская ул.","Московский пер.","Мостовая ул.","Набережная ул.","Нефтяников ул.","Новая ул.","Новосибирская ул.","Новосибирский пер.","Новый пер.","Октябрьская ул.","Октябрьский пер.","Олега Кошевого ул.","Орджоникидзе ул.","Островского ул.","П. Полянского ул.","Первомайский пер.","Полевая ул.","Пролетарская ул.","Пролетарский пер.","Пушкина ул.","Рабочая ул.","Райподстанция ул.","Речная ул.","Розы Люксембург ул.","Садовая ул.","Северная ул.","Северный пер.","Семафорная ул.","Семафорный пер.","Сибирская ул.","Советская ул.","Сосновая ул.","Стаханова ул.","Степная ул.","Строительная ул.","Трактовая ул.","Трактовой пер.","Транспортников ул.","Трудовая ул.","Ударная ул.","Урицкого ул.","Урицкого пер.","Урманская ул.","Урманский пер.","Хуторская ул.","Челюскина ул.","Чернышевского пер.","Чехова ул.","Чкалова ул.","Чулымская ул.","Школьная ул.","Школьный пер.","Щетинкина ул.","Элеваторная ул.","Элеваторный пер.","Энгельса ул.","Энергетиков ул.","Энтузиастов ул."];
+
+// TABS
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// AUTOCOMPLETE
+function makeAC(inputId, listId, onChange) {
+  const input = document.getElementById(inputId);
+  const list  = document.getElementById(listId);
+  if (!input || !list) return;
+  let idx = -1;
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    list.innerHTML = ''; idx = -1;
+    if (!q) { list.classList.remove('open'); onChange && onChange(); return; }
+    const hits = STREETS.filter(s => s.toLowerCase().includes(q)).slice(0, 8);
+    if (!hits.length) { list.classList.remove('open'); onChange && onChange(); return; }
+    hits.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      const i = s.toLowerCase().indexOf(q);
+      div.innerHTML = s.slice(0,i) + '<mark>' + s.slice(i, i+q.length) + '</mark>' + s.slice(i+q.length);
+      div.addEventListener('mousedown', e => {
+        e.preventDefault(); input.value = s;
+        list.classList.remove('open'); onChange && onChange();
+      });
+      list.appendChild(div);
+    });
+    list.classList.add('open');
+  });
+  input.addEventListener('keydown', e => {
+    const items = list.querySelectorAll('.autocomplete-item');
+    if (e.key==='ArrowDown') { idx=Math.min(idx+1,items.length-1); hl(items); e.preventDefault(); }
+    else if (e.key==='ArrowUp') { idx=Math.max(idx-1,0); hl(items); e.preventDefault(); }
+    else if (e.key==='Enter' && idx>=0) { input.value=items[idx].textContent; list.classList.remove('open'); onChange&&onChange(); }
+    else if (e.key==='Escape') list.classList.remove('open');
+  });
+  function hl(items) { items.forEach((it,i) => it.classList.toggle('active', i===idx)); }
+  input.addEventListener('blur', () => setTimeout(() => list.classList.remove('open'), 150));
+  input.addEventListener('change', () => onChange && onChange());
+}
+
+// SECTION LOGIC
+function buildSection(p, basePrice) {
+  const state = { stop: false, ret: false };
+  const gv = id => (document.getElementById(id)||{}).value?.trim()||'';
+
+  function calcPrice() {
+    let price = basePrice;
+    if (state.stop) price += 50;
+    if (state.ret) price *= 2;
+    return price;
+  }
+
+  function noteText() {
+    const parts = [];
+    if (state.stop) parts.push('+50 ₽ заезд');
+    if (state.ret) parts.push('× 2 обратно');
+    return parts.length ? parts.join(', ') : 'по городу Чулым';
+  }
+
+  function getMsg() {
+    const from = gv(p+'-from') || '___';
+    const stop = gv(p+'-stop');
+    const to   = gv(p+'-to')   || '___';
+    const type = p==='d' ? 'доставку' : 'такси';
+    let msg = `Хочу заказать ${type}. От — ${from}`;
+    if (state.stop && stop) msg += `, заезд — ${stop}`;
+    msg += `, до — ${to}.`;
+    if (state.ret) msg += ' Маршрут туда и обратно.';
+    if (gv(p+'-from') && gv(p+'-to')) msg += ` Стоимость: ${calcPrice()} ₽.`;
+    return msg;
+  }
+
+  function update() {
+    const ready = gv(p+'-from') && gv(p+'-to');
+    const box = document.getElementById(p+'-price-box');
+    box.classList.toggle('show', !!ready);
+    if (ready) {
+      document.getElementById(p+'-price-value').textContent = calcPrice() + ' ₽';
+      document.getElementById(p+'-price-note').textContent = noteText();
+    }
+    const tg = document.getElementById(p+'-btn-tg');
+    if (tg) tg.href = 'https://t.me/+79134734735?text=' + encodeURIComponent(getMsg());
+  }
+
+  ['from','stop','to'].forEach(f => makeAC(p+'-'+f, p+'-'+f+'-list', update));
+
+  const optStop   = document.getElementById(p+'-opt-stop');
+  const optReturn = document.getElementById(p+'-opt-return');
+  const stopWrap  = document.getElementById(p+'-stopover-wrap');
+
+  optStop.addEventListener('click', () => {
+    state.stop = !state.stop;
+    optStop.classList.toggle('active', state.stop);
+    stopWrap.classList.toggle('visible', state.stop);
+    if (!state.stop) document.getElementById(p+'-stop').value = '';
+    update();
+  });
+  optReturn.addEventListener('click', () => {
+    state.ret = !state.ret;
+    optReturn.classList.toggle('active', state.ret);
+    update();
+  });
+
+  document.getElementById(p+'-btn-max').addEventListener('click', () => openModal(getMsg()));
+  update();
+}
+
+buildSection('t', 150);
+buildSection('d', 100);
+
+// MODAL
+let copyTO;
+function openModal(text) {
+  document.getElementById('modal-body').textContent = text;
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-copy').textContent = 'Скопировать ✓';
+}
+document.getElementById('modal-x').addEventListener('click', () => document.getElementById('modal-overlay').classList.remove('open'));
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target.id==='modal-overlay') document.getElementById('modal-overlay').classList.remove('open');
+});
+document.getElementById('modal-copy').addEventListener('click', () => {
+  navigator.clipboard.writeText(document.getElementById('modal-body').textContent).then(() => {
+    const btn = document.getElementById('modal-copy');
+    btn.textContent = 'Скопировано ✓';
+    clearTimeout(copyTO);
+    copyTO = setTimeout(() => btn.textContent = 'Скопировать ✓', 2000);
+  });
+});
+</script>
+</body>
+</html>
